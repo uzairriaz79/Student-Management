@@ -1,0 +1,74 @@
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///management.db'  # SQLite for simplicity
+db = SQLAlchemy(app)
+
+class Student(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    college = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    phone = db.Column(db.String(15), nullable=False)
+
+# Flask API route to handle student creation
+@app.route('/students', methods=['POST'])
+def create_student():
+    try:
+        data = request.get_json()
+        new_student = Student(name=data['name'], college=data['college'], address=data['address'], phone=data['phone'])
+        db.session.add(new_student)
+        db.session.commit()
+        return jsonify({'message': 'Student created successfully'}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Flask API route to handle student retrieval
+@app.route('/students', methods=['GET'])
+def get_students():
+    try:
+        students = Student.query.all()
+        student_list = []
+        for student in students:
+            student_info = {'id': student.id, 'name': student.name, 'college': student.college, 'address': student.address, 'phone': student.phone}
+            student_list.append(student_info)
+        return jsonify(student_list)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Flask API route to handle student deletion
+@app.route('/students/<int:id>', methods=['DELETE'])
+def delete_student(id):
+    try:
+        student = Student.query.get(id)
+        if student:
+            db.session.delete(student)
+            db.session.commit()
+            return jsonify({'message': f'Student with ID {id} deleted successfully'}), 200
+        else:
+            return jsonify({'error': f'Student with ID {id} not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Flask API route to handle student update
+@app.route('/students/<int:id>', methods=['PUT'])
+def update_student(id):
+    try:
+        student = Student.query.get(id)
+        if student:
+            data = request.get_json()
+            student.name = data.get('name', student.name)
+            student.college = data.get('college', student.college)
+            student.address = data.get('address', student.address)
+            student.phone = data.get('phone', student.phone)
+            db.session.commit()
+            return jsonify({'message': f'Student with ID {id} updated successfully'}), 200
+        else:
+            return jsonify({'error': f'Student with ID {id} not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    db.create_all()  # Create database tables if not exist
+    app.run(debug=True)
