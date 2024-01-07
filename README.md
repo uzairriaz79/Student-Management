@@ -1,4 +1,12 @@
-1 - IMPORT research.sql
+ [Important to Know] :
+    Make sure to run the API seperately (In the seperate console or run it seperately) other-wise you may run into problems.
+    or Just paste this in the console  [ >> python RestApi.py ] 
+
+    You can Update and Delete the data via clicking on the Rows of Preview Window.
+
+    To install requirments.txt   : >>  pip install -r requirements.txt
+  
+1 - IMPORT research.py
 2 - Change /config.php accordingly.
 3 - It is strongly advised that you add a Virtual Host to this project. 
 
